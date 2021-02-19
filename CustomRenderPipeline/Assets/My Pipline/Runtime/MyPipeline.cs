@@ -5,13 +5,20 @@ using UnityEngine.Rendering;
 
 public class MyPipeline : RenderPipeline
 {
+	bool useDynamicBatching, useGPUInstancing;
+	public MyPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher) {
+		GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+		this.useDynamicBatching = useDynamicBatching;
+		this.useGPUInstancing = useGPUInstancing;
+	}
+
 	CameraRenderer renderer = new CameraRenderer();
 
 	protected override void Render(ScriptableRenderContext context, Camera[] cameras)
 	{
 		foreach (Camera camera in cameras)
 		{
-			renderer.Render(context, camera);
+			renderer.Render(context, camera, useDynamicBatching, useGPUInstancing);
 		}
 	}
 }

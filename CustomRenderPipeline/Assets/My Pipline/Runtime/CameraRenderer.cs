@@ -17,7 +17,7 @@ using UnityEngine.Rendering;
 	CullingResults cullingResults;
 
 	
-	public void Render(ScriptableRenderContext context, Camera camera)
+	public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
 	{
 		this.context = context;
 		this.camera = camera;
@@ -28,7 +28,7 @@ using UnityEngine.Rendering;
 			return;
 		}
 		this.Setup();
-		this.DrawVisibleGeometry();
+		this.DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
 		DrawUnsupportedShaders();
 		DrawGizmos();
 		this.Submit();
@@ -36,14 +36,18 @@ using UnityEngine.Rendering;
 
 	
 
-	void DrawVisibleGeometry()
+	void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
 	{
 		var sortingSettings = new SortingSettings(camera) {
 			criteria= SortingCriteria.CommonOpaque
 		};
 		var drawingSettings = new DrawingSettings(
 			unlitShaderTagId, sortingSettings
-		);
+		)
+		{
+			enableDynamicBatching = useDynamicBatching,
+			enableInstancing = useGPUInstancing
+		};
 
 		var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
 
