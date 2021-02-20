@@ -7,9 +7,11 @@ public class MyPipeline : RenderPipeline
 {
 	bool useDynamicBatching, useGPUInstancing;
 	public MyPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher) {
+		
 		GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
 		this.useDynamicBatching = useDynamicBatching;
 		this.useGPUInstancing = useGPUInstancing;
+		GraphicsSettings.lightsUseLinearIntensity = true;
 	}
 
 	CameraRenderer renderer = new CameraRenderer();
