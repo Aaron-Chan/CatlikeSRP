@@ -18,23 +18,34 @@ using UnityEngine.Rendering;
 		name = bufferName,
 	};
 	CullingResults cullingResults;
+	ShadowSettings shadowSettings;
 
-	
-	public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
+
+	public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing, ShadowSettings shadowSettings)
 	{
 		this.context = context;
 		this.camera = camera;
+		this.shadowSettings = shadowSettings;
 		PrepareBuffer();
 		PrepareForSceneWindow();
-		if (!Cull())
+		if (!Cull(shadowSettings.maxDistance))
 		{
 			return;
 		}
+		//在绘制物体前先绘制shadow
+		//在这里sample是为了让shadow的层级在camera下
+		buffer.BeginSample(bufferName);
+		ExecuteBuffer();
+		lighting.Setup(context, cullingResults, shadowSettings);
 		this.Setup();
-		lighting.Setup(context, cullingResults);
+		buffer.EndSample(bufferName);
+	
+
 		this.DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
 		DrawUnsupportedShaders();
 		DrawGizmos();
+		//在提交前清理lighting
+		lighting.Cleanup();
 		this.Submit();
 	}
 
@@ -92,10 +103,11 @@ using UnityEngine.Rendering;
 		buffer.Clear();
 	}
 
-	bool Cull()
+	bool Cull(float maxShadowDistance)
 	{
 		if (camera.TryGetCullingParameters(out ScriptableCullingParameters p))
 		{
+			p.shadowDistance = Mathf.Min(camera.farClipPlane, maxShadowDistance);
 			cullingResults = context.Cull(ref p);
 			return true;
 		}

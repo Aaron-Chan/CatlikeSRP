@@ -21,13 +21,15 @@ public class Lighting
 		name = bufferName
 	};
 	CullingResults cullingResults;
+	Shadows shadows = new Shadows();
 
-
-	public void Setup(ScriptableRenderContext context, CullingResults cullingResults)
+	public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSettings shadowSettings)
 	{
 		this.cullingResults = cullingResults;
+		shadows.Setup(context, cullingResults, shadowSettings);
 		buffer.BeginSample(bufferName);
 		SetupLights();
+		shadows.Render();
 		buffer.EndSample(bufferName);
 		context.ExecuteCommandBuffer(buffer);
 		buffer.Clear();
@@ -59,6 +61,13 @@ public class Lighting
 		if (index < maxDirLightCount) {
 			dirLightColors[index] = visibleLight.finalColor;
 			dirLightDirections[index] = - visibleLight.localToWorldMatrix.GetColumn(2);
+			shadows.ReserveDirectionalShadows(visibleLight.light, index);
 		}
 	}
+
+	public void Cleanup()
+	{
+		this.shadows.Cleanup();
+	}
+
 }
