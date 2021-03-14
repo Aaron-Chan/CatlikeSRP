@@ -91,7 +91,9 @@ public partial class CameraRenderer {
 			enableInstancing = useGPUInstancing,
 			//将lightmap uv传给gpu
 			perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe |
-				PerObjectData.LightProbeProxyVolume
+				PerObjectData.LightProbeProxyVolume 
+				| PerObjectData.ShadowMask |  PerObjectData.OcclusionProbe |  
+				PerObjectData.OcclusionProbeProxyVolume
 
 		};
 		drawingSettings.SetShaderPassName(1, litShaderTagId);
