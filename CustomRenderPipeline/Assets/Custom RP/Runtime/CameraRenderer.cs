@@ -93,7 +93,8 @@ public partial class CameraRenderer {
 			perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe |
 				PerObjectData.LightProbeProxyVolume 
 				| PerObjectData.ShadowMask |  PerObjectData.OcclusionProbe |  
-				PerObjectData.OcclusionProbeProxyVolume
+				PerObjectData.OcclusionProbeProxyVolume |
+				PerObjectData.ReflectionProbes 
 
 		};
 		drawingSettings.SetShaderPassName(1, litShaderTagId);
