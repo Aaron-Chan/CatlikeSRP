@@ -26,4 +26,14 @@ float DistanceSquared(float3 pA, float3 pB) {
 	return dot(pA - pB, pA - pB);
 }
 
+void ClipLOD(float2 positionCS, float fade)
+{
+#if defined(LOD_FADE_CROSSFADE)
+    //根据fade的值，进行dither裁剪
+    //在进行fade 一个lod fade是正的 另外一个是负值
+		float dither = InterleavedGradientNoise(positionCS.xy, 0);
+		clip(fade + (fade < 0.0 ? dither : -dither));
+#endif
+}
+
 #endif
