@@ -12,6 +12,8 @@ struct Surface {
 	float smoothness;
     float fresnelStrength;
 	float dither;
+    float occlusion;
+    float3 interpolatedNormal;
 };
 
 #endif

@@ -58,7 +58,7 @@ float3 IndirectBRDF(
     //But roughness scatters this reflection, so it should reduce the specular reflection that we end up seeing. We do this by dividing it by the squared roughness plus one.
     //Thus low roughness values don't matter much while maximum roughness halves the reflection.
     reflection /= brdf.roughness * brdf.roughness + 1.0;
-    return diffuse * brdf.diffuse + reflection;
+    return (diffuse * brdf.diffuse + reflection) * surface.occlusion;
 }
 
 #endif

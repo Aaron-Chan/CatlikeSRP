@@ -11,8 +11,10 @@
 		[Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
 		[Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
 		[KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
-
+		[Toggle(_MASK_MAP)] _MaskMapToggle ("Mask Map", Float) = 0
+		[NoScaleOffset] _MaskMap("Mask (MODS)", 2D) = "white" {}
 		_Metallic ("Metallic", Range(0, 1)) = 0
+		_Occlusion ("Occlusion", Range(0, 1)) = 1
 		_Smoothness ("Smoothness", Range(0, 1)) = 0.5
 		_Fresnel ("Fresnel", Range(0, 1)) = 1
 
@@ -24,6 +26,16 @@
 
 		[NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
 		[HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
+		[Toggle(_DETAIL_MAP)] _DetailMapToggle ("Detail Maps", Float) = 0
+		_DetailMap("Details", 2D) = "linearGrey" {}
+		[NoScaleOffset] _DetailNormalMap("Detail Normals", 2D) = "bump" {}
+		_DetailAlbedo("Detail Albedo", Range(0, 1)) = 1
+		_DetailSmoothness("Detail Smoothness", Range(0, 1)) = 1
+		[NoScaleOffset] _NormalMap("Normals", 2D) = "bump" {}
+
+		[Toggle(_NORMAL_MAP)] _NormalMapToggle ("Normal Map", Float) = 0
+		_NormalScale("Normal Scale", Range(0, 1)) = 1
+		_DetailNormalScale("Detail Normal Scale", Range(0, 1)) = 1
 	}
 	
 	SubShader {
@@ -50,6 +62,8 @@
 			//是否开启shadowmask
 			#pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
 			#pragma multi_compile _ LIGHTMAP_ON
+			#pragma shader_feature _MASK_MAP
+			#pragma shader_feature _DETAIL_MAP
 			#pragma multi_compile_instancing
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 			#pragma vertex LitPassVertex
