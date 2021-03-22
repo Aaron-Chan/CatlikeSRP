@@ -6,7 +6,7 @@ public class Lighting {
 
 	const string bufferName = "Lighting";
 
-	const int maxDirLightCount = 4;
+	const int maxDirLightCount = 4, maxOtherLightCount = 64;
 
 	static int
 		dirLightCountId = Shader.PropertyToID("_DirectionalLightCount"),
@@ -16,9 +16,21 @@ public class Lighting {
 			Shader.PropertyToID("_DirectionalLightShadowData");
 
 	static Vector4[]
-		dirLightColors = new Vector4[maxDirLightCount],
-		dirLightDirections = new Vector4[maxDirLightCount],
-		dirLightShadowData = new Vector4[maxDirLightCount];
+	dirLightColors = new Vector4[maxDirLightCount],
+	dirLightDirections = new Vector4[maxDirLightCount],
+	dirLightShadowData = new Vector4[maxDirLightCount];
+
+
+	static int
+		otherLightCountId = Shader.PropertyToID("_OtherLightCount"),
+		otherLightColorsId = Shader.PropertyToID("_OtherLightColors"),
+		otherLightPositionsId = Shader.PropertyToID("_OtherLightPositions");
+
+	static Vector4[]
+		otherLightColors = new Vector4[maxOtherLightCount],
+		otherLightPositions = new Vector4[maxOtherLightCount];
+
+
 
 	CommandBuffer buffer = new CommandBuffer {
 		name = bufferName
@@ -49,6 +61,7 @@ public class Lighting {
 	void SetupLights () {
 		NativeArray<VisibleLight> visibleLights = cullingResults.visibleLights;
 		int dirLightCount = 0;
+		int otherLightCount = 0;
 		for (int i = 0; i < visibleLights.Length; i++) {
 			VisibleLight visibleLight = visibleLights[i];
 			if (visibleLight.lightType == LightType.Directional) {
@@ -60,9 +73,22 @@ public class Lighting {
 		}
 
 		buffer.SetGlobalInt(dirLightCountId, dirLightCount);
-		buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
-		buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
-		buffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
+		if (dirLightCount > 0)
+		{
+			buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
+			buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
+			buffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
+		}
+
+		buffer.SetGlobalInt(otherLightCountId, otherLightCount);
+		if (otherLightCount > 0)
+		{
+			buffer.SetGlobalVectorArray(otherLightColorsId, otherLightColors);
+			buffer.SetGlobalVectorArray(
+				otherLightPositionsId, otherLightPositions
+			);
+		}
+
 	}
 
 	void SetupDirectionalLight (int index, ref VisibleLight visibleLight) {
