@@ -23,7 +23,7 @@ public partial class CameraRenderer {
 
 	public void Render (
 		ScriptableRenderContext context, Camera camera,
-		bool useDynamicBatching, bool useGPUInstancing,
+		bool useDynamicBatching, bool useGPUInstancing,bool useLightsPerObject,
 		ShadowSettings shadowSettings
 	) {
 		this.context = context;
@@ -37,10 +37,10 @@ public partial class CameraRenderer {
 		
 		buffer.BeginSample(SampleName);
 		ExecuteBuffer();
-		lighting.Setup(context, cullingResults, shadowSettings);
+		lighting.Setup(context, cullingResults, shadowSettings, useLightsPerObject);
 		buffer.EndSample(SampleName);
 		Setup();
-		DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
+		DrawVisibleGeometry(useDynamicBatching, useGPUInstancing, useLightsPerObject);
 		DrawUnsupportedShaders();
 		DrawGizmos();
 		lighting.Cleanup();
@@ -80,10 +80,15 @@ public partial class CameraRenderer {
 		buffer.Clear();
 	}
 
-	void DrawVisibleGeometry (bool useDynamicBatching, bool useGPUInstancing) {
+	void DrawVisibleGeometry (bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject) {
 		var sortingSettings = new SortingSettings(camera) {
 			criteria = SortingCriteria.CommonOpaque
 		};
+
+		PerObjectData lightsPerObjectFlags = useLightsPerObject ?
+			PerObjectData.LightData | PerObjectData.LightIndices :
+			PerObjectData.None;
+
 		var drawingSettings = new DrawingSettings(
 			unlitShaderTagId, sortingSettings
 		) {
@@ -94,7 +99,8 @@ public partial class CameraRenderer {
 				PerObjectData.LightProbeProxyVolume 
 				| PerObjectData.ShadowMask |  PerObjectData.OcclusionProbe |  
 				PerObjectData.OcclusionProbeProxyVolume |
-				PerObjectData.ReflectionProbes 
+				PerObjectData.ReflectionProbes | 
+				lightsPerObjectFlags
 
 		};
 		drawingSettings.SetShaderPassName(1, litShaderTagId);
