@@ -296,4 +296,30 @@ public class Shadows {
 		context.ExecuteCommandBuffer(buffer);
 		buffer.Clear();
 	}
+
+
+
+	public Vector4 ReserveOtherShadows(Light light, int visibleLightIndex)
+	{
+		if (light.shadows != LightShadows.None && light.shadowStrength > 0f)
+		{
+			LightBakingOutput lightBaking = light.bakingOutput;
+			// But because their range is limited it is possible for multiple lights to use the same channel, as long as they don't overlap. 
+			//Thus the shadow mask can support an arbitrary amount of lights, but only up to four per texel. If multiple lights end up overlapping 
+			//while trying to claim the same channel then the least important lights will be forced to Baked mode until there is no longer a conflict.
+			//如果灯光太多，会出现多个light取同一个channel，会将不重要的light强制变成baked，也就不会进行计算了
+			if (
+				lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
+				lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask
+			)
+			{
+				useShadowMask = true;
+				return new Vector4(
+					light.shadowStrength, 0f, 0f,
+					lightBaking.occlusionMaskChannel
+				);
+			}
+		}
+		return new Vector4(0f, 0f, 0f, -1f);
+	}
 }
