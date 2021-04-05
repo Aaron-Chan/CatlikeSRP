@@ -15,6 +15,7 @@ MonoBehaviour:
   useDynamicBatching: 0
   useGPUInstancing: 1
   useSRPBatcher: 1
+  postFXSettings: {fileID: 11400000, guid: 6c7b953616ada5941ac32074f8c92420, type: 2}
   shadows:
     maxDistance: 20
     distanceFade: 0.1

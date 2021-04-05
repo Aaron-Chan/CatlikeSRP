@@ -20,11 +20,14 @@ public partial class CameraRenderer {
 	CullingResults cullingResults;
 
 	Lighting lighting = new Lighting();
+	PostFXStack postFXStack = new PostFXStack();
+
+	static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
 
 	public void Render (
 		ScriptableRenderContext context, Camera camera,
 		bool useDynamicBatching, bool useGPUInstancing,
-		ShadowSettings shadowSettings
+		ShadowSettings shadowSettings, PostFXSettings postFXSettings
 	) {
 		this.context = context;
 		this.camera = camera;
@@ -38,12 +41,22 @@ public partial class CameraRenderer {
 		buffer.BeginSample(SampleName);
 		ExecuteBuffer();
 		lighting.Setup(context, cullingResults, shadowSettings);
+		postFXStack.Setup(context, camera, postFXSettings);
+
 		buffer.EndSample(SampleName);
 		Setup();
 		DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
 		DrawUnsupportedShaders();
-		DrawGizmos();
-		lighting.Cleanup();
+		DrawGizmosBeforeFX();
+
+		//开启绘制
+		if (postFXStack.IsActive)
+		{
+			postFXStack.Render(frameBufferId);
+		}
+		DrawGizmosAfterFX();
+
+		Cleanup();
 		Submit();
 	}
 
@@ -56,9 +69,36 @@ public partial class CameraRenderer {
 		return false;
 	}
 
+	void Cleanup()
+	{
+		lighting.Cleanup();
+		if (postFXStack.IsActive)
+		{
+			buffer.ReleaseTemporaryRT(frameBufferId);
+		}
+	}
+
 	void Setup () {
 		context.SetupCameraProperties(camera);
 		CameraClearFlags flags = camera.clearFlags;
+
+		if (postFXStack.IsActive)
+		{
+			//因为当前渲染的渲染的rt是这个framebuffer 所以需要清除数据
+			if (flags > CameraClearFlags.Color)
+			{
+				flags = CameraClearFlags.Color;
+			}
+			buffer.GetTemporaryRT(
+				frameBufferId, camera.pixelWidth, camera.pixelHeight,
+				32, FilterMode.Bilinear, RenderTextureFormat.Default
+			);
+			buffer.SetRenderTarget(
+				frameBufferId,
+				RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
+			);
+		}
+
 		buffer.ClearRenderTarget(
 			flags <= CameraClearFlags.Depth,
 			flags == CameraClearFlags.Color,
